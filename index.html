@@ -14257,6 +14257,592 @@ a.anchor-link {
     <!-- End of mathjax configuration --></head>
 <body class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
 
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h1 id="Bitcoin-Price-Prediction-Tutorial">Bitcoin Price Prediction Tutorial<a class="anchor-link" href="#Bitcoin-Price-Prediction-Tutorial">&#182;</a></h1><h3 id="by-Jake-Catron">by Jake Catron<a class="anchor-link" href="#by-Jake-Catron">&#182;</a></h3><hr>
+<p>In this article I will be walking you through the process of using statistical analysis Logistics Regression, as well as cutting edge Machine Learning models such as Long Short-Term Memory (LSTM) to predict the price of the cryptocurrency Bitcoin (BTC).</p>
+
+</div>
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h2 id="What-is-Bitcoin?">What is Bitcoin?<a class="anchor-link" href="#What-is-Bitcoin?">&#182;</a></h2><p>Bitcoin is the world's most popular and valuable cryptocurrency. Considering my grandfather once asked me about it, it is likely that you have heard of it as well. But, you may still not understand what it fundamentally is.</p>
+<p>Wikipedia provides the following definition: "Bitcoin is a digital assest designed to work as a medium of exhange that uses <strong>cryptography</strong> to control its creation and management, rather than relying on central authorities."</p>
+<h2 id="Crypto-what??">Crypto-what??<a class="anchor-link" href="#Crypto-what??">&#182;</a></h2><p>Before we dive into Bitcoin, let's first explore cryptography to understand the basis. "Cryptography" comes from the Greek word <em>kryptos</em> (secret) and <em>graphein</em> (to write). So it is the practice of writing secret messages. How does one accomplish this secrecy in the modern world? We use <strong>encryption algorithms</strong> to convert plaintext into unitelligible nonsense known as a <strong>hash</strong>. Think about the food kind of hash, it is a jumbled mixture of many ingredients. In the same sense, a encrpytion hash is a jumbled mixture of letters and numbers. The goal of all encryption algorithms is to increase the <strong>computational time</strong> required to convert the hashes created back into plain text. This is the key takeaway here. Modern encrpytion algorithms create complex hashes that take <em>enormous</em> amounts of computational time and electricity to map back to the original value.</p>
+<h2 id="Soo,-what-is-Bitcoin?">Soo, what is Bitcoin?<a class="anchor-link" href="#Soo,-what-is-Bitcoin?">&#182;</a></h2><p>Well Bitcoin is founded on a principle called the <strong>block-chain</strong>. Think of every block as a page in a book. The page contains a bunch of information that we can use to make conclusions about the other pages in the book, and it also has a unique number. This number only appears once in the entire book! Let's call the number the <strong>nonce</strong> ("number only used once"). So each page in the book has information on it as well as its own nonce that leads to the next page directly after it.</p>
+<p>If we wanted, we could call a book a <em>page-chain</em> (see what I did there?). But the difference between the block-chain and the page-chain is that in a block-chain, each block's nonce (page number) is unknown at first. Imagine instead of our pages containing words and sentences in our natural language, someone used an encryption algorithm to mix up everything into a secret mess(age) of letters and numbers! Essentially this is what happens to each block in the block-chain. The creator of Bitcoin (Satoshi Nakamoto) encrypted the phrase "The Times 03/Jan/2009 Chancellor on brink of second bailout for banks" into the hash "000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f". This along with a <strong>nonce</strong> of 2083236893 and some other information such as the <strong>signature</strong> and <strong>public key</strong> formed the very first block in the block-chain of Bitcoin.</p>
+<p>Instead of simply turning the page, for a new block to be added to the chain someone with a lot of brains and computational power has to increment the nonce until it hashes to a hex number with a certain amount of leading 0 bits (look at the hash of the first block above). Once that threshold of 0 bits is reached, the <strong>miner</strong> of the block is awarded a certain amount of coin for their efforts. Then this newly formed block passes on its solved hash to everyone in the network, so they can start mining the next block into existence.</p>
+<h2 id="Bitcoin's-Controlled-Supply">Bitcoin's Controlled Supply<a class="anchor-link" href="#Bitcoin's-Controlled-Supply">&#182;</a></h2><p>Bitcoin was designed in a way that the difficulty of mining a new block (achieving the correct nonce) is adjusted every 2016 blocks mined. The difficulty is adjusted so that the rate of mining is roughly 6 blocks per hour. This adjustment is to account for advancements in computing power and speed.</p>
+<p>Also, the amount of coins awarded to a successful miner is cut in half every time 210,000 new blocks are mined and added to the chain. However once the 32 halvings occur, the suppy supply of Bitcoin is finite and unchangeable. Since the intial block awarded 50 Bitcoin, it follows that Bitcoin's <em>supply curve</em> will stop once reaching to a value juuust under 21 million.</p>
+<hr>
+<p><strong>Note</strong>: There are many other aspects of the block-chain which I did not touch on here, see Satoshi's paper in the references for further reading.</p>
+
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span> 
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[1]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Importing libraries</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
+<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
+<span class="kn">import</span> <span class="nn">sklearn</span>
+<span class="kn">import</span> <span class="nn">autokeras</span> <span class="k">as</span> <span class="nn">ak</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[2]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">CMC_API_KEY</span> <span class="o">=</span> <span class="s1">&#39;50537acb-cc69-422a-be55-83ca8c4b7e91&#39;</span>
+
+<span class="n">url</span> <span class="o">=</span> <span class="s1">&#39;https://pro-api.coinmarketcap.com/v1/cryptocurrency/&#39;</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[3]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">btc_1min_df_og</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s1">&#39;bitstampUSD_1-min_data_2012-01-01_to_2021-03-31.csv&#39;</span><span class="p">)</span>
+<span class="n">btc_1min_df_og</span><span class="o">.</span><span class="n">info</span><span class="p">()</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>&lt;class &#39;pandas.core.frame.DataFrame&#39;&gt;
+RangeIndex: 4857377 entries, 0 to 4857376
+Data columns (total 8 columns):
+ #   Column             Dtype  
+---  ------             -----  
+ 0   Timestamp          int64  
+ 1   Open               float64
+ 2   High               float64
+ 3   Low                float64
+ 4   Close              float64
+ 5   Volume_(BTC)       float64
+ 6   Volume_(Currency)  float64
+ 7   Weighted_Price     float64
+dtypes: float64(7), int64(1)
+memory usage: 296.5 MB
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[4]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># btc_1min_df_na = btc_1min_df.dropna(thresh=7).reset_index(drop=True)</span>
+<span class="c1"># btc_1min_df_na.info()</span>
+<span class="c1"># btc_1min_df_na</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[5]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">btc_1min_df_og</span><span class="p">[</span><span class="s1">&#39;Datetime&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">btc_1min_df_og</span><span class="p">[</span><span class="s1">&#39;Timestamp&#39;</span><span class="p">],</span> <span class="n">unit</span><span class="o">=</span><span class="s1">&#39;s&#39;</span><span class="p">)</span>
+<span class="n">btc_1min_df_og</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[5]:</div>
+
+
+
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Timestamp</th>
+      <th>Open</th>
+      <th>High</th>
+      <th>Low</th>
+      <th>Close</th>
+      <th>Volume_(BTC)</th>
+      <th>Volume_(Currency)</th>
+      <th>Weighted_Price</th>
+      <th>Datetime</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1325317920</td>
+      <td>4.39</td>
+      <td>4.39</td>
+      <td>4.39</td>
+      <td>4.39</td>
+      <td>0.455581</td>
+      <td>2.000000</td>
+      <td>4.390000</td>
+      <td>2011-12-31 07:52:00</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1325317980</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>2011-12-31 07:53:00</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>1325318040</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>2011-12-31 07:54:00</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>1325318100</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>2011-12-31 07:55:00</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>1325318160</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>2011-12-31 07:56:00</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>4857372</th>
+      <td>1617148560</td>
+      <td>58714.31</td>
+      <td>58714.31</td>
+      <td>58686.00</td>
+      <td>58686.00</td>
+      <td>1.384487</td>
+      <td>81259.372187</td>
+      <td>58692.753339</td>
+      <td>2021-03-30 23:56:00</td>
+    </tr>
+    <tr>
+      <th>4857373</th>
+      <td>1617148620</td>
+      <td>58683.97</td>
+      <td>58693.43</td>
+      <td>58683.97</td>
+      <td>58685.81</td>
+      <td>7.294848</td>
+      <td>428158.146640</td>
+      <td>58693.226508</td>
+      <td>2021-03-30 23:57:00</td>
+    </tr>
+    <tr>
+      <th>4857374</th>
+      <td>1617148680</td>
+      <td>58693.43</td>
+      <td>58723.84</td>
+      <td>58693.43</td>
+      <td>58723.84</td>
+      <td>1.705682</td>
+      <td>100117.070370</td>
+      <td>58696.198496</td>
+      <td>2021-03-30 23:58:00</td>
+    </tr>
+    <tr>
+      <th>4857375</th>
+      <td>1617148740</td>
+      <td>58742.18</td>
+      <td>58770.38</td>
+      <td>58742.18</td>
+      <td>58760.59</td>
+      <td>0.720415</td>
+      <td>42332.958633</td>
+      <td>58761.866202</td>
+      <td>2021-03-30 23:59:00</td>
+    </tr>
+    <tr>
+      <th>4857376</th>
+      <td>1617148800</td>
+      <td>58767.75</td>
+      <td>58778.18</td>
+      <td>58755.97</td>
+      <td>58778.18</td>
+      <td>2.712831</td>
+      <td>159417.751000</td>
+      <td>58764.349363</td>
+      <td>2021-03-31 00:00:00</td>
+    </tr>
+  </tbody>
+</table>
+<p>4857377 rows × 9 columns</p>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[6]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">sns</span><span class="o">.</span><span class="n">set_theme</span><span class="p">()</span>
+<span class="c1"># sns.lineplot(data=btc_1min_df, x = &#39;Datetime&#39;, y=&#39;Weighted_Price&#39;)</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<p>As we can see there has been some pretty extreme volatility in Bitcoin's price throughout its year of existence. 2021 has been a particulary spectcular year, which may have to do with factors other than price and volatility.  Because our data is dealing with such high frequency (1-minute) time intervals we are only going to use data from March 01, 2019 to March 01, 2021</p>
+
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[7]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Only keep observations from March 1, 2019 and onwards</span>
+<span class="n">start_cond</span> <span class="o">=</span> <span class="n">btc_1min_df_og</span><span class="o">.</span><span class="n">Datetime</span> <span class="o">&gt;=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="mi">2019</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span> 
+<span class="n">btc_1min_df_trim</span> <span class="o">=</span> <span class="n">btc_1min_df_og</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">start_cond</span><span class="p">,:]</span>
+<span class="c1"># Only keep observations stricly before March 2, 2021</span>
+<span class="n">end_cond</span> <span class="o">=</span> <span class="n">btc_1min_df_trim</span><span class="o">.</span><span class="n">Datetime</span> <span class="o">&lt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timestamp</span><span class="p">(</span><span class="mi">2021</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">btc_1min_df_trim</span> <span class="o">=</span> <span class="n">btc_1min_df_trim</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">end_cond</span><span class="p">,:]</span>
+
+<span class="c1"># Resetting index to start from 0</span>
+<span class="n">btc_1min_df_trim</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[10]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">btc_1min_df_trim</span><span class="o">.</span><span class="n">info</span><span class="p">()</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>&lt;class &#39;pandas.core.frame.DataFrame&#39;&gt;
+RangeIndex: 1052640 entries, 0 to 1052639
+Data columns (total 9 columns):
+ #   Column             Non-Null Count    Dtype         
+---  ------             --------------    -----         
+ 0   Timestamp          1052640 non-null  int64         
+ 1   Open               1034973 non-null  float64       
+ 2   High               1034973 non-null  float64       
+ 3   Low                1034973 non-null  float64       
+ 4   Close              1034973 non-null  float64       
+ 5   Volume_(BTC)       1034973 non-null  float64       
+ 6   Volume_(Currency)  1034973 non-null  float64       
+ 7   Weighted_Price     1034973 non-null  float64       
+ 8   Datetime           1052640 non-null  datetime64[ns]
+dtypes: datetime64[ns](1), float64(7), int64(1)
+memory usage: 72.3 MB
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[11]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="mi">1052640</span> <span class="o">-</span> <span class="mi">1034973</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[11]:</div>
+
+
+
+
+<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
+<pre>17667</pre>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[19]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">na_indices</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">isnull</span><span class="p">(</span><span class="n">btc_1min_df_trim</span><span class="p">)</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span><span class="o">.</span><span class="n">nonzero</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">na_indices</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[19]:</div>
+
+
+
+
+<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
+<pre>array([     24,      41,      44, ..., 1050613, 1051259, 1051928])</pre>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[22]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">na_indices</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">120</span><span class="p">)</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[22]:</div>
+
+
+
+
+<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
+<pre>(array([    0,     1,     2, ..., 17653, 17654, 17661]),)</pre>
+</div>
+
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[9]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Checking if we are missing a minute time interval</span>
+<span class="c1"># (btc_1min_df.loc[1034972, &#39;Timestamp&#39;] - btc_1min_df.loc[0,&#39;Timestamp&#39;]) / 60</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span> 
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<p>We will use an LSTM model because after reviewing countless academic papers, they seemed to commonly have the highest prediction accuracy, as well as the lowest measure of error.</p>
+<p>What is LSTM?</p>
+<p>LSTM stands for Long Short-Term Memory. It is a type of Reccurent Neural Network (RNN). The thing with traditional neural nets is that they don't use the state/reasoning from an earlier layer to inform them about a later one. However RNN's suffer from short-term memory, as their gradient are ventually either lost during back-propagation or eventually explode. This is why LSTM is required, as it updates the cell's state using the culmination of the hidden state from previous cells. Thus a longer memory is produced. (explain more on this section)</p>
+<p>When analyzing an asset such as Bitcoin, we want to use the knowledge we have of previous timeframes to make a decision about the upcoming ones. If you want a more detailed understanding of LSTM model, I suggest <a href="https://colah.github.io/posts/2015-08-Understanding-LSTMs/">this article</a> by Chrisopher Olah.</p>
+<p>Thus we will be using an RNN. After reviewing the most recent academic literature on cryptocurrency price prediction (see <a href="https://www.semanticscholar.org/paper/Bitcoin-price-prediction-using-machine-learning%3A-An-Chen-Li/cec3d533193d922b73b96e8556198f113e1de934">here</a>, <a href="https://www.sciencedirect.com/science/article/pii/S2405918821000027">here</a>, and <a href="https://arxiv.org/ftp/arxiv/papers/2102/2102.05448.pdf">here</a>) they all have the best results using LSTM with relatively high dimensions and frequency.</p>
+<p>The features I will be using are</p>
+
+</div>
+</div>
 </body>
 
 
